@@ -1,4 +1,3 @@
-
 <p align="center">
   <img src="https://scp222thj.dev/static/images/malumLogo.png">
 </p>
@@ -23,6 +22,8 @@
 # 😎 Table Of Contents
 - [🎁 Releases](#-releases)
 - [⬇️ Installation](#️-installation)
+  - [🪟 Windows](#-windows)
+  - [🐧 Linux](#-linux)
 - [📋 Features](#-features)
 - [❓ FAQ](#-faq)
 - [⚠️ Disclaimer](#️-disclaimer)
@@ -47,7 +48,7 @@
 
 
 # ⬇️ Installation
-
+## 🪟 Windows
 1. Download the latest **MalumMenu zip pack** from [here](https://github.com/scp222thj/MalumMenu/releases/latest).
     - **For Steam, Epic Launcher, and Itch.io:** Download `MalumMenu-VERSION.zip`.
     - **For Microsoft Store:** Download `MalumMenu-VERSION-Microsoft.zip`.
@@ -69,8 +70,12 @@
 
 7. If the installation doesn't work, check out our [FAQ](#-faq).
 
-# 📋 Features
+## 🐧 Linux
+- Make sure you are running Among Us under Proton. On Steam you can check this by right-clicking Among Us in your library → `Properties` → `Compatibility` → `Force the use of a specific Steam Play compatibility tool`. You might want to test different Proton versions if you're having issues launching the game. 
+- Check out [this guide](https://docs.bepinex.dev/articles/advanced/proton_wine.html) and [this guide](https://docs.bepinex.dev/master/articles/advanced/steam_interop.html#adding-the-dll-override) to get BepInEx (the framework MalumMenu is built upon) working. Then follow the steps for Windows.
+- If you are experiencing crashes or errors like `Unable to execute IL2CPP chainloader`, set your launch arguments (right-click Among Us in your library → `Properties` → `General` → `Launch Options`) to `PROTON_NO_ESYNC=1 PROTON_USE_WINED3D=1 %command%` 
 
+# 📋 Features
 <img width="550" alt="image" src="https://scp222thj.dev/static/images/malumIngame.png">
 
 - An intuitive GUI with our latest, greatest Among Us cheats
@@ -150,7 +155,6 @@ Here are some other useful resources:
 
 
 # ⚠️ Disclaimer
-
 This mod is not affiliated with Among Us or Innersloth LLC, and the content contained therein is not endorsed or otherwise sponsored by Innersloth LLC. Portions of the materials contained herein are property of Innersloth LLC. 
 
 Usage of this mod can violate the terms of service of Among Us, which may lead to punitive action including temporary or permanent bans from the game. The creator is not responsible for any consequences you may face due to usage. Use at your own risk.
