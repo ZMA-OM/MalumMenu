@@ -7,19 +7,82 @@ using Hazel;
 using System.Reflection;
 using AmongUs.GameOptions;
 using Sentry.Internal.Extensions;
+using Il2CppSystem.Net.NetworkInformation;
 
 namespace MalumMenu;
 public static class Utils
 {
     //Useful for getting full lists of all the Among Us cosmetics IDs
     public static ReferenceDataManager referenceDataManager = DestroyableSingleton<ReferenceDataManager>.Instance;
-    
-    public static bool isShip => ShipStatus.Instance != null;
-    public static bool isLobby => AmongUsClient.Instance.GameState == AmongUsClient.GameStates.Joined;
-    public static bool isFreePlay => AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay;
-    public static bool isPlayer => PlayerControl.LocalPlayer != null;
-    public static bool isHost = AmongUsClient.Instance.AmHost;
-    public static bool utilsOpenChat;
+    public static bool isShip => ShipStatus.Instance;
+    public static bool isLobby => AmongUsClient.Instance && AmongUsClient.Instance.GameState == InnerNetClient.GameStates.Joined && !isFreePlay;
+    public static bool isOnlineGame => AmongUsClient.Instance && AmongUsClient.Instance.NetworkMode == NetworkModes.OnlineGame;
+    public static bool isLocalGame => AmongUsClient.Instance && AmongUsClient.Instance.NetworkMode == NetworkModes.LocalGame;
+    public static bool isFreePlay => AmongUsClient.Instance && AmongUsClient.Instance.NetworkMode == NetworkModes.FreePlay;
+    public static bool isPlayer => PlayerControl.LocalPlayer;
+    public static bool isHost = AmongUsClient.Instance && AmongUsClient.Instance.AmHost;
+    public static bool isInGame => AmongUsClient.Instance && AmongUsClient.Instance.GameState == InnerNetClient.GameStates.Started && isPlayer;
+    public static bool isMeeting => MeetingHud.Instance;
+    public static bool isMeetingVoting => isMeeting && MeetingHud.Instance.state is MeetingHud.VoteStates.Voted or MeetingHud.VoteStates.NotVoted;
+    public static bool isMeetingProceeding => isMeeting && MeetingHud.Instance.state is MeetingHud.VoteStates.Proceeding;
+    public static bool isExiling => ExileController.Instance && !(AirshipIsActive && SpawnInMinigame.Instance.isActiveAndEnabled);
+    public static bool isNormalGame => GameOptionsManager.Instance.CurrentGameOptions.GameMode == GameModes.Normal;
+    public static bool isHideNSeek => GameOptionsManager.Instance.CurrentGameOptions.GameMode == GameModes.HideNSeek;
+    public static bool SkeldIsActive => (MapNames)GameOptionsManager.Instance.CurrentGameOptions.MapId == MapNames.Skeld;
+    public static bool MiraHQIsActive => (MapNames)GameOptionsManager.Instance.CurrentGameOptions.MapId == MapNames.Mira;
+    public static bool PolusIsActive => (MapNames)GameOptionsManager.Instance.CurrentGameOptions.MapId == MapNames.Polus;
+    public static bool DleksIsActive => (MapNames)GameOptionsManager.Instance.CurrentGameOptions.MapId == MapNames.Dleks;
+    public static bool AirshipIsActive => (MapNames)GameOptionsManager.Instance.CurrentGameOptions.MapId == MapNames.Airship;
+    public static bool FungleIsActive => (MapNames)GameOptionsManager.Instance.CurrentGameOptions.MapId == MapNames.Fungle;
+
+    //Get ClientData by PlayerControl
+    public static ClientData getClientByPlayer(PlayerControl player)
+    {
+        try
+        {
+            var client = AmongUsClient.Instance.allClients.ToArray().FirstOrDefault(cd => cd.Character.PlayerId == player.PlayerId);
+            return client;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    // Get ClientData.Id by PlayerControl
+    public static int getClientIdByPlayer(PlayerControl player)
+    {
+        if (player == null) return -1;
+        var client = getClientByPlayer(player);
+        return client == null ? -1 : client.Id;
+    }
+
+    // Check if player is currently vanished
+    public static bool isVanished(NetworkedPlayerInfo playerInfo)
+    {
+        PhantomRole phantomRole = playerInfo.Role as PhantomRole;
+
+        if (phantomRole != null){
+            return phantomRole.fading || phantomRole.isInvisible;
+        }
+
+        return false;
+    }
+
+    // Custom isValidTarget method for cheats
+    public static bool isValidTarget(NetworkedPlayerInfo target)
+    {
+        bool killAnyoneRequirements = !(target == null) && !target.Disconnected && target.Object.Visible && target.PlayerId != PlayerControl.LocalPlayer.PlayerId && !(target.Role == null) && !(target.Object == null);
+
+        bool fullRequirements = killAnyoneRequirements && !target.IsDead && !target.Object.inVent && !target.Object.inMovingPlat && target.Role.CanBeKilled;
+
+        if (CheatToggles.killAnyone){
+            return killAnyoneRequirements;
+        }
+
+        return fullRequirements;
+        
+    }
 
     // Adjusts HUD resolution
     // Used to fix UI problems when zooming out
@@ -37,26 +100,22 @@ public static class Utils
     {
         if (isFreePlay){
 
-            PlayerControl.LocalPlayer.RpcMurderPlayer(target, true);
+            PlayerControl.LocalPlayer.MurderPlayer(target, MurderResultFlags.Succeeded);
             return;
         
         }
 
-        var HostData = AmongUsClient.Instance.GetHost();
-        if (HostData != null && !HostData.Character.Data.Disconnected)
+        foreach (var item in PlayerControl.AllPlayerControls)
         {
-            foreach (var item in PlayerControl.AllPlayerControls)
-            {
-                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.None, AmongUsClient.Instance.GetClientIdFromCharacter(item));
-                writer.WriteNetObject(target);
-                writer.Write((int)result);
-                AmongUsClient.Instance.FinishRpcImmediately(writer);
-            }
+            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.None, AmongUsClient.Instance.GetClientIdFromCharacter(item));
+            writer.WriteNetObject(target);
+            writer.Write((int)result);
+            AmongUsClient.Instance.FinishRpcImmediately(writer);
         }
     }
 
     // Report bodies using RPC calls
-    public static void reportDeadBody(GameData.PlayerInfo playerData)
+    public static void reportDeadBody(NetworkedPlayerInfo playerData)
     {
 
         if (isFreePlay){
@@ -84,9 +143,7 @@ public static class Utils
 
             foreach (PlayerTask task in PlayerControl.LocalPlayer.myTasks)
             {
-                if (!task.IsComplete){
-                    PlayerControl.LocalPlayer.RpcCompleteTask(task.Id);
-                }
+                PlayerControl.LocalPlayer.RpcCompleteTask(task.Id);
             }
             return;
         
@@ -115,7 +172,6 @@ public static class Utils
     public static void openChat()
     {
         if (!DestroyableSingleton<HudManager>.Instance.Chat.IsOpenOrOpening){
-            utilsOpenChat = true;
             DestroyableSingleton<HudManager>.Instance.Chat.chatScreen.SetActive(true);
             PlayerControl.LocalPlayer.NetTransform.Halt();
             DestroyableSingleton<HudManager>.Instance.Chat.StartCoroutine(DestroyableSingleton<HudManager>.Instance.Chat.CoOpen());
@@ -127,7 +183,7 @@ public static class Utils
 
     }
 
-    // Draw a tracer line between to 2 GameObjects
+    // Draw a tracer line between two 2 GameObjects
     public static void drawTracer(GameObject sourceObject, GameObject targetObject, Color color)
     {
         LineRenderer lineRenderer;
@@ -155,7 +211,7 @@ public static class Utils
     public static bool chatUiActive()
     {
         try{
-            return utilsOpenChat || CheatToggles.alwaysChat || MeetingHud.Instance || !ShipStatus.Instance || PlayerControl.LocalPlayer.Data.IsDead;
+            return CheatToggles.alwaysChat || MeetingHud.Instance || !ShipStatus.Instance || PlayerControl.LocalPlayer.Data.IsDead;
         }catch{
             return false;
         }
@@ -164,7 +220,6 @@ public static class Utils
     // Close Chat UI
     public static void closeChat()
     {
-        utilsOpenChat = false;
         if (DestroyableSingleton<HudManager>.Instance.Chat.IsOpenOrOpening){
             DestroyableSingleton<HudManager>.Instance.Chat.ForceClosed();
         }
@@ -196,7 +251,7 @@ public static class Utils
 
         outputList.Clear();
 
-        List<GameData.PlayerInfo> allPlayers = GameData.Instance.AllPlayers;
+        List<NetworkedPlayerInfo> allPlayers = GameData.Instance.AllPlayers;
         for (int i = 0; i < allPlayers.Count; i++)
         {
             PlayerControl player = allPlayers[i].Object;
@@ -241,15 +296,15 @@ public static class Utils
 
         if (ping <= 100){ // Green for ping < 100
 
-            return $"<color=#00ff00ff>\nPing: {ping} ms</color>";
+            return $"<color=#00ff00ff>PING: {ping} ms</color>";
 
         } else if (ping < 400){ // Yellow for 100 < ping < 400
 
-            return $"<color=#ffff00ff>\nPing: {ping} ms</color>";
+            return $"<color=#ffff00ff>PING: {ping} ms</color>";
 
         } else{ // Red for ping > 400
 
-            return $"<color=#ff0000ff>\nPing: {ping} ms</color>";
+            return $"<color=#ff0000ff>PING: {ping} ms</color>";
         }
     }
 
@@ -294,36 +349,14 @@ public static class Utils
 
     // Get the string name for a chosen player's role
     // String are automatically translated
-    public static string getRoleName(GameData.PlayerInfo playerData)
+    public static string getRoleName(NetworkedPlayerInfo playerData)
     {
         var translatedRole = DestroyableSingleton<TranslationController>.Instance.GetString(playerData.Role.StringName, Il2CppSystem.Array.Empty<Il2CppSystem.Object>());
         if (translatedRole == "STRMISS")
         {
-            StringNames @string;
             if (playerData.RoleWhenAlive.HasValue)
             {
-                switch (playerData.RoleWhenAlive.Value)
-                {
-                    case RoleTypes.Crewmate:
-                        @string = DestroyableSingleton<CrewmateRole>.Instance.StringName;
-                        break;
-                    case RoleTypes.Engineer:
-                        @string = DestroyableSingleton<EngineerRole>.Instance.StringName;
-                        break;
-                    case RoleTypes.Scientist:
-                        @string = DestroyableSingleton<ScientistRole>.Instance.StringName;
-                        break;
-                    case RoleTypes.Impostor:
-                        @string = DestroyableSingleton<ImpostorRole>.Instance.StringName;
-                        break;
-                    case RoleTypes.Shapeshifter:
-                        @string = DestroyableSingleton<ShapeshifterRole>.Instance.StringName;
-                        break;
-                    default:
-                        @string = DestroyableSingleton<GuardianAngelRole>.Instance.StringName;
-                        break;
-                }
-                translatedRole = DestroyableSingleton<TranslationController>.Instance.GetString(@string, Il2CppSystem.Array.Empty<Il2CppSystem.Object>());
+                translatedRole = DestroyableSingleton<TranslationController>.Instance.GetString(getBehaviourByRoleType(playerData.RoleWhenAlive.Value).StringName, Il2CppSystem.Array.Empty<Il2CppSystem.Object>());
             } else {
                 translatedRole = "Ghost";
             }
@@ -332,22 +365,29 @@ public static class Utils
     }
 
     // Get the appropriate nametag for a player (seeRoles cheat)
-    public static string getNameTag(PlayerControl player, string playerName, bool isChat = false){
+    public static string getNameTag(NetworkedPlayerInfo playerInfo, string playerName, bool isChat = false){
         string nameTag = playerName;
 
-        if (CheatToggles.seeRoles){
+        if (!playerInfo.Role.IsNull() && !playerInfo.IsNull() && !playerInfo.Disconnected && !playerInfo.Object.CurrentOutfit.IsNull()){
 
-            if (isChat){
-                nameTag = $"<color=#{ColorUtility.ToHtmlStringRGB(player.Data.Role.TeamColor)}><size=70%>{Utils.getRoleName(player.Data)}</size> {nameTag}</color>";
-                return nameTag;
+            if (CheatToggles.seeRoles){
+
+                if (isChat){
+                    nameTag = $"<color=#{ColorUtility.ToHtmlStringRGB(playerInfo.Role.TeamColor)}><size=70%>{Utils.getRoleName(playerInfo)}</size> {nameTag}</color>";
+                    return nameTag;
+                }
+
+                nameTag = $"<color=#{ColorUtility.ToHtmlStringRGB(playerInfo.Role.TeamColor)}><size=70%>{getRoleName(playerInfo)}</size>\r\n{nameTag}</color>";
+            
+            } else if (PlayerControl.LocalPlayer.Data.Role.NameColor == playerInfo.Role.NameColor){
+
+                if (isChat){
+                    return nameTag;
+                }
+
+                nameTag = $"<color=#{ColorUtility.ToHtmlStringRGB(playerInfo.Role.NameColor)}>{nameTag}</color>";
+
             }
-
-            nameTag = $"<color=#{ColorUtility.ToHtmlStringRGB(player.Data.Role.TeamColor)}><size=70%>{getRoleName(player.Data)}</size>\r\n{nameTag}</color>";
-        
-        } else if (PlayerControl.LocalPlayer.Data.Role.NameColor == player.Data.Role.NameColor){
-
-            nameTag = $"<color=#{ColorUtility.ToHtmlStringRGB(player.Data.Role.NameColor)}>{nameTag}</color>";
-
         }
 
         return nameTag;

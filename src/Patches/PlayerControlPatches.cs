@@ -20,24 +20,28 @@ public static class PlayerControl_CmdCheckMurder
     // Prefix patch of PlayerControl.CmdCheckMurder to always bypass checks when killing players
     public static bool Prefix(PlayerControl __instance, PlayerControl target){
 
-        __instance.isKilling = false;
-
-		if (!__instance.Data.Role.IsValidTarget(target.Data))
-		{
-			return true;
-		}
-
-        // Protected players can only be killed if killAnyone is enabled
-        if (target.protectedByGuardianId > -1 && !CheatToggles.killAnyone){
-            return true;
+        if (Utils.isLobby){
+            HudManager.Instance.Notifier.AddDisconnectMessage("Killing in lobby disabled for being too buggy");
+            return false;
         }
 
-		__instance.isKilling = true;
+        // Direct kill RPC should only be used when absolutely necessary as to avoid detection from anticheat mods
+        if (CheatToggles.killAnyone || CheatToggles.zeroKillCd || Utils.isVanished(__instance.Data) || Utils.isMeeting || (MalumPPMCheats.oldRole != null && !Utils.getBehaviourByRoleType((AmongUs.GameOptions.RoleTypes)MalumPPMCheats.oldRole).IsImpostor)){
+            if (!__instance.Data.Role.IsValidTarget(target.Data))
+            {
+                return true;
+            }
 
-        // Use custom util to bypass anticheat
-        Utils.murderPlayer(target, MurderResultFlags.Succeeded);
+            if (target.protectedByGuardianId > -1 && !CheatToggles.killAnyone){
+                return true;
+            }
+            
+            Utils.murderPlayer(target, MurderResultFlags.Succeeded);
 
-        return false;
+            return false;
+        }
+
+        return true;
 
     }
 }
@@ -59,8 +63,9 @@ public static class ShapeshifterCheats_PlayerControl_CmdCheckShapeshift_Postfix
     // Prefix patch of PlayerControl.CmdCheckShapeshift to prevent SS animation
     public static void Prefix(ref bool shouldAnimate){
 
-        shouldAnimate = !CheatToggles.noShapeshiftAnim;
-
+        if (shouldAnimate && CheatToggles.noShapeshiftAnim){
+            shouldAnimate = false;
+        }
     }
 }
 
@@ -70,7 +75,8 @@ public static class ShapeshifterCheats_PlayerControl_CmdCheckRevertShapeshift_Po
     // Prefix patch of PlayerControl.CmdCheckRevertShapeshift to prevent SS animation
     public static void Prefix(ref bool shouldAnimate){
 
-        shouldAnimate = !CheatToggles.noShapeshiftAnim;
-
+        if (shouldAnimate && CheatToggles.noShapeshiftAnim){
+            shouldAnimate = false;
+        }
     }
 }

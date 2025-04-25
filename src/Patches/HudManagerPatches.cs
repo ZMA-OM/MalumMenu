@@ -29,8 +29,14 @@ public static class HudManager_Update
 {
 	public static void Postfix(HudManager __instance)
     {
-		__instance.ShadowQuad.gameObject.SetActive(MalumESP.fullBrightActive()); // Fullbright
-		__instance.Chat.gameObject.SetActive(Utils.chatUiActive()); // AlwaysChat
+		__instance.ShadowQuad.gameObject.SetActive(!MalumESP.fullBrightActive()); // Fullbright
+
+		if (Utils.chatUiActive()){ // AlwaysChat
+			__instance.Chat.gameObject.SetActive(true);
+		} else {
+			Utils.closeChat();
+			__instance.Chat.gameObject.SetActive(false);
+		}
 		
 		MalumCheats.useVentCheat(__instance);
 		MalumESP.zoomOut(__instance);

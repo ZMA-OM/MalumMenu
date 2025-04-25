@@ -8,8 +8,11 @@ namespace MalumMenu
         public static bool teleportPlayer;
         public static bool teleportCursor;
         public static bool reportBody;
-        public static bool murderPlayer;
-        public static bool murderAll;
+        public static bool killPlayer;
+        public static bool telekillPlayer;
+        public static bool killAll;
+        public static bool killAllCrew;
+        public static bool killAllImps;
 
         //Roles
         public static bool changeRole;
@@ -19,17 +22,22 @@ namespace MalumMenu
         public static bool killAnyone;
         public static bool endlessSsDuration;
         public static bool endlessBattery;
+        public static bool endlessTracking;
+        public static bool noTrackingCooldown;
+        public static bool noTrackingDelay;
         public static bool noVitalsCooldown;
         public static bool noVentCooldown;
         public static bool endlessVentTime;
+        public static bool endlessVanish;
+        public static bool killVanished;
+        public static bool noVanishAnim;
         public static bool noShapeshiftAnim;
 
         //ESP
         public static bool fullBright;
-        public static bool alwaysChat;
         public static bool seeGhosts;
         public static bool seeRoles;
-        public static bool ventVision;
+        public static bool seeDisguises;
         public static bool revealVotes;
 
         //Camera
@@ -50,6 +58,10 @@ namespace MalumMenu
         public static bool tracersBodies;
         public static bool colorBasedTracers;
         public static bool distanceBasedTracers;
+
+        //Chat
+        public static bool alwaysChat;
+        public static bool chatJailbreak;
         
         //Ship
         public static bool closeMeeting;
@@ -80,14 +92,15 @@ namespace MalumMenu
         public static void DisablePPMCheats(string variableToKeep)
         {
             reportBody = variableToKeep != "reportBody" ? false : reportBody;
-            murderPlayer = variableToKeep != "murderPlayer" ? false : murderPlayer;
+            killPlayer = variableToKeep != "killPlayer" ? false : killPlayer;
+            telekillPlayer = variableToKeep != "telekillPlayer" ? false : telekillPlayer;
             spectate = variableToKeep != "spectate" ? false : spectate;
             changeRole = variableToKeep != "changeRole" ? false : changeRole;
             teleportPlayer = variableToKeep != "teleportPlayer" ? false : teleportPlayer;
         }
 
         public static bool shouldPPMClose(){
-            return !changeRole && !reportBody && !murderPlayer && !spectate && !teleportPlayer;
+            return !changeRole && !reportBody && !telekillPlayer && !killPlayer && !spectate && !teleportPlayer;
         }
     }
 }

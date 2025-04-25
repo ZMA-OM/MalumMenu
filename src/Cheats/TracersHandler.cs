@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace MalumMenu;
@@ -46,7 +45,7 @@ public static class TracersHandler
             if (CheatToggles.colorBasedTracers){
 
                 // Fetch the dead body's PlayerInfo
-                GameData.PlayerInfo playerById = GameData.Instance.GetPlayerById(deadBody.ParentId);
+                NetworkedPlayerInfo playerById = GameData.Instance.GetPlayerById(deadBody.ParentId);
 
                 color = playerById.Color; // Color-Based Tracer
 

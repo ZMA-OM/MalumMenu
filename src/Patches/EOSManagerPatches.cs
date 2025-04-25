@@ -1,13 +1,25 @@
+using AmongUs.Data.Player;
+using BepInEx;
 using HarmonyLib;
 
 namespace MalumMenu;
 
-[HarmonyPatch(typeof(EOSManager), nameof(EOSManager.Update))]
-public static class EOSManager_Update
+[HarmonyPatch(typeof(EOSManager), nameof(EOSManager.StartInitialLoginFlow))]
+public static class EOSManager_StartInitialLoginFlow
 {
-    public static void Postfix()
+    // Prefix patch of EOSManager.StartInitialLoginFlow to automatically play with a guest account
+    // when loading the game with guestMode enabled
+    public static bool Prefix(EOSManager __instance)
     {
-        MalumSpoof.spoofLevel();
+        // Always delete old guest accounts to avoid merge account popup
+        __instance.DeleteDeviceID(new System.Action(__instance.EndMergeGuestAccountFlow));
+        
+        // Log into a new temp account if the user is playing in guest mode
+        if (!MalumMenu.guestMode.Value) return true;
+        __instance.StartTempAccountFlow();
+        __instance.CloseStartupWaitScreen();
+
+        return false;
     }
 }
 

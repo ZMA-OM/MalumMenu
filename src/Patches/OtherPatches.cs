@@ -1,5 +1,8 @@
 using HarmonyLib;
+using AmongUs.Data;
 using UnityEngine;
+using System;
+using System.Security.Cryptography;
 
 namespace MalumMenu;
 
@@ -12,6 +15,84 @@ public static class PlatformSpecificData_Serialize
 
         MalumSpoof.spoofPlatform(__instance);
 
+    }
+}
+
+[HarmonyPatch(typeof(FreeChatInputField), nameof(FreeChatInputField.UpdateCharCount))]
+public static class FreeChatInputField_UpdateCharCount
+{
+    // Postfix patch of FreeChatInputField.UpdateCharCount to change how charCountText displays
+    public static void Postfix(FreeChatInputField __instance)
+    {
+        if (!CheatToggles.chatJailbreak){
+            return; // Only works if CheatToggles.chatJailbreak is enabled
+        }
+
+        // Update charCountText to account for longer characterLimit
+        
+        int length = __instance.textArea.text.Length;
+        __instance.charCountText.SetText($"{length}/{__instance.textArea.characterLimit}");
+
+        if (length < 90){ // Under 75%
+
+            __instance.charCountText.color = UnityEngine.Color.black;
+        
+        }else if (length < 119){ // Under 100%
+
+            __instance.charCountText.color = new UnityEngine.Color(1f, 1f, 0f, 1f);
+        
+        }else{ // Over or equal to 100%
+
+            __instance.charCountText.color = UnityEngine.Color.red;
+
+        }
+    }
+}
+
+[HarmonyPatch(typeof(SystemInfo), nameof(SystemInfo.deviceUniqueIdentifier), MethodType.Getter)]
+public static class SystemInfo_deviceUniqueIdentifier_Getter
+{
+    // Postfix patch of SystemInfo.deviceUniqueIdentifier Getter method 
+    // Made to hide the user's real unique deviceId by generating a random fake one
+    public static void Postfix(ref string __result)
+    {
+        if (MalumMenu.spoofDeviceId.Value){
+
+            var bytes = new byte[16];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(bytes);
+            }
+
+            __result = BitConverter.ToString(bytes).Replace("-", "").ToLower();
+
+        }
+        
+    }
+}
+
+[HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.Update))]
+public static class AmongUsClient_Update
+{
+    public static void Postfix()
+    {
+        MalumSpoof.spoofLevel();
+
+        // Code to treat temp accounts the same as full accounts, including access to friend codes
+        if (EOSManager.Instance.loginFlowFinished && MalumMenu.guestMode.Value){
+
+            DataManager.Player.Account.LoginStatus = EOSManager.AccountLoginStatus.LoggedIn;
+
+            if (string.IsNullOrWhiteSpace(EOSManager.Instance.FriendCode))
+            {
+                string friendCode = MalumSpoof.spoofFriendCode();
+                EditAccountUsername editUsername = EOSManager.Instance.editAccountUsername;
+                editUsername.UsernameText.SetText(friendCode);
+                editUsername.SaveUsername();
+                EOSManager.Instance.FriendCode = friendCode;
+            }
+
+        }
     }
 }
 
@@ -36,30 +117,22 @@ public static class VersionShower_Start
 [HarmonyPatch(typeof(PingTracker), nameof(PingTracker.Update))]
 public static class PingTracker_Update
 {
-    // Postfix patch of PingTracker.Update to show game metrics
+    // Postfix patch of PingTracker.Update to show mod name & ping
     public static void Postfix(PingTracker __instance)
     {
-        __instance.text.alignment = TMPro.TextAlignmentOptions.TopRight;
-        
-        __instance.text.text = $"MalumMenu by scp222thj" + // Mod info
-                                Utils.getColoredPingText(AmongUsClient.Instance.Ping); // Colored Ping
+        __instance.text.alignment = TMPro.TextAlignmentOptions.Center;
 
-        // Position adjustments
-        var offset_x = 1.2f;
-        if (HudManager.InstanceExists && HudManager._instance.Chat.chatButton.active) offset_x += 0.8f;
-        if (FriendsListManager.InstanceExists && FriendsListManager._instance.FriendsListButton.Button.active) offset_x += 0.8f;
-        __instance.GetComponent<AspectPosition>().DistanceFromEdge = new Vector3(offset_x, 0f, 0f);
-        
-    }
-}
+        if (AmongUsClient.Instance.IsGameStarted){
 
-[HarmonyPatch(typeof(BackendEndpoints), nameof(BackendEndpoints.Announcements), MethodType.Getter)]
-public static class BackendEndpoints_Announcements_Getter
-{
-    // Prefix patch of Getter method for BackendEndpoints.Announcements for custom announcements
-    public static void Postfix(ref string __result)
-    {
-        __result = "https://scp222thj.dev/api/malumnews"; // MalumNews webserver
+            __instance.aspectPosition.DistanceFromEdge = new Vector3(-0.21f, 0.50f, 0f);
+
+            __instance.text.text = $"MalumMenu by scp222thj ~ {Utils.getColoredPingText(AmongUsClient.Instance.Ping)}";
+            
+            return;
+        }
+
+        __instance.text.text = $"MalumMenu by scp222thj\n{Utils.getColoredPingText(AmongUsClient.Instance.Ping)}";
+        
     }
 }
 
@@ -74,7 +147,7 @@ public static class HatManager_Initialize
 }
 
 [HarmonyPatch(typeof(StatsManager), nameof(StatsManager.BanMinutesLeft), MethodType.Getter)]
-public static class StatsManager_BanMinutesLeft
+public static class StatsManager_BanMinutesLeft_Getter
 {
     // Prefix patch of Getter method for StatsManager.BanMinutesLeft to remove disconnect penalty
     public static void Postfix(StatsManager __instance, ref int __result)
@@ -117,7 +190,7 @@ public static class InnerNet_InnerNetClient_JoinGame
     public static void Prefix()
     {
         if (CheatToggles.unlockFeatures){
-            AmongUs.Data.DataManager.Player.Account.LoginStatus = EOSManager.AccountLoginStatus.LoggedIn;
+            DataManager.Player.Account.LoginStatus = EOSManager.AccountLoginStatus.LoggedIn;
         }
     }
 }
@@ -136,7 +209,7 @@ public static class Vent_CanUse
 {
     // Prefix patch of Vent.CanUse to allow venting for cheaters
     // Basically does what the original method did with the required modifications
-    public static void Postfix(Vent __instance, GameData.PlayerInfo pc, ref bool canUse, ref bool couldUse, ref float __result)
+    public static void Postfix(Vent __instance, NetworkedPlayerInfo pc, ref bool canUse, ref bool couldUse, ref float __result)
     {
         if (!PlayerControl.LocalPlayer.Data.Role.CanVent && !PlayerControl.LocalPlayer.Data.IsDead){
             if (CheatToggles.useVents){

@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="./logo.png">
+  <img src="https://scp222thj.dev/static/images/malumLogo.png">
 </p>
 
 
@@ -30,6 +30,12 @@
 # 🎁 Releases
 | Mod Version| Among Us - Version | Link |
 |----------|-------------|-----------------|
+| v2.4.2 | 2024.9.4 | [Download](https://github.com/scp222thj/MalumMenu/releases/download/v2.4.2/MalumMenu-2.4.2.zip) |
+| v2.4.1 | 2024.8.13 | [Download](https://github.com/scp222thj/MalumMenu/releases/download/v2.4.1/MalumMenu-2.4.1.zip) |
+| v2.4.0 | 2024.6.18 | [Download](https://github.com/scp222thj/MalumMenu/releases/download/v2.4.0/MalumMenu-2.4.0.zip) |
+| v2.3.1 | 2024.6.18 | [Download](https://github.com/scp222thj/MalumMenu/releases/download/v2.3.1/MalumMenu-2.3.1.zip) |
+| v2.3.0 | 2024.6.4 | [Download](https://github.com/scp222thj/MalumMenu/releases/download/v2.3.0/MalumMenu-2.3.0.zip) |
+| v2.2.0 | 2024.3.5 | [Download](https://github.com/scp222thj/MalumMenu/releases/download/v2.2.0/MalumMenu-2.2.0.zip) |
 | v2.1.0 | 2023.11.28 | [Download](https://github.com/scp222thj/MalumMenu/releases/download/v2.1.0/MalumMenu-2.1.0.zip) |
 | v2.0.0 | 2023.11.28 | [Download](https://github.com/scp222thj/MalumMenu/releases/download/v2.0.0/MalumMenu-2.0.0.zip) |
 | v1.2.1 | 2023.11.28 | [Download](https://github.com/scp222thj/MalumMenu/releases/download/v1.2.1/MalumMenu-1.2.1.zip) |
@@ -42,17 +48,30 @@
 
 # ⬇️ Installation
 
-1. Download `MalumMenu-*.zip` from [here](https://github.com/scp222thj/MalumMenu/releases/latest)
-2. Extract the contents of the zip file and place them into your Among Us folder
-    - For Steam users, the Among Us folder can be found by right-clicking the game in their Library, clicking on `Manage`, and then clicking on `Browse local files`
-3. Start the game normally
-    - The first launch will take a **MUCH** longer time than usual, so don't be alarmed if you have to wait a while
-4. Toggle the cheat menu on by pressing **DELETE** on your keyboard
-5. If the installation doesn't work, check out our [FAQ](#-im-having-issues-installing-malummenu)
+1. Download the latest **MalumMenu zip pack** from [here](https://github.com/scp222thj/MalumMenu/releases/latest).
+    - **For Steam, Epic Launcher, and Itch.io:** Download `MalumMenu-VERSION.zip`.
+    - **For Microsoft Store:** Download `MalumMenu-VERSION-Microsoft.zip`.
+
+2. Open the zip file you have just downloaded and copy all its contents.
+
+3. Paste these files directly into your Among Us game folder:
+    - **Steam:** Right-click Among Us in your Library → Click `Manage` → Click `Browse local files`.
+    - **Epic Launcher:** Right-click Among Us in your Library → Click `Manage` → Click the folder icon in the `Installation` box.
+    - **Itch.io:** Open the Itch.io app → Right-click Among Us in your Library → Click `Manage` → Click `Open folder in Explorer`.
+    - **Microsoft Store:** Open the location where Among Us is installed (usually under `C:\Program Files\WindowsApps\` or another default path depending on your installation).
+
+4. Launch Among Us as you normally would. You should see a console window appear, installing the mod's requirements.
+
+5. Wait for the console window to finish the installation.
+
+6. After installation, Among Us will automatically open with MalumMenu successfully installed.
+    - By default, you can toggle the cheat GUI on by pressing **DELETE** on your keyboard.
+
+7. If the installation doesn't work, check out our [FAQ](#-faq).
 
 # 📋 Features
 
-<img width="550" alt="image" src="https://cdn.discordapp.com/attachments/1097928762324168744/1133767845558362202/image.png">
+<img width="550" alt="image" src="https://scp222thj.dev/static/images/malumIngame.png">
 
 - An intuitive GUI with our latest, greatest Among Us cheats
 - See ghosts & reveal the impostors
@@ -63,7 +82,7 @@
 - Murder any distant player from across the map
 - Unlock all of the game's cosmetics for FREE
 - No more annoying disconnect penalties
-- Custom announcements fetched from our webserver
+- Bypass account bans with ease
 
 For a complete list of all of MalumMenu's features, click [here](https://github.com/scp222thj/MalumMenu/blob/main/FEATURES.md)
 
@@ -72,27 +91,31 @@ Click to expand each topic
 <details>
   <summary><h2>❗ I'm having issues installing MalumMenu</h2></summary>
 
-First of all, make sure you are running the most recent version of Among Us (`2023.11.28`) with the most recent version of MalumMenu (`v2.1.0`)
+First of all, make sure you are running the most recent version of Among Us (`2024.9.4`) with the most recent version of MalumMenu (`v2.4.2`).
 
 Also, check if your platform is officially supported:
 
 - ✅ Steam
 - ✅ Itch.io
 - ✅ Epic Games Launcher
+- ✅ Microsoft Store
 - ❔ Cracked (rarely works)
-- ❌ Microsoft Store
 - ❌ iOS App Store & Google Play
 - ❌ PS & Switch & Xbox
 
+Now ensure that you have downloaded the correct zip file for your platform:
+- For Steam, Epic Games Launcher, and Itch.io, use `MalumMenu-VERSION.zip`
+- For the Microsoft Store edition, use `MalumMenu-VERSION-Microsoft.zip`
+
 Make sure you followed the installation guide precisely. This is what your `Among Us` folder should look like after a successful installation:
 
-<img src="https://cdn.discordapp.com/attachments/1097928762324168744/1189514291993387098/image.png" alt="drawing" width="550"/>
+<img src="https://scp222thj.dev/static/images/amongUsFolder.png" alt="drawing" width="550"/>
 
 <br>Some antiviruses might cause issues when installing the mod, so consider temporarily deactivating your antivirus if the game isn't booting after installation.
 
-When installing MalumMenu for the first time, it will take **MUCH** longer than usual for the game to load. This is completly normal and expected behaviour, so don't be alarmed if you have to wait a while. You can keep track of the installation progress through this useful BepInEx console window that pops up when you start the game:
+When installing MalumMenu for the first time, it will take **MUCH** longer than usual for the game to load. This is completely normal and expected behavior, so don't be alarmed if you have to wait a while. You can keep track of the installation progress through this useful BepInEx console window that pops up when you start the game:
 
-<img src="https://cdn.discordapp.com/attachments/1097928762324168744/1199461727247544350/image.png" alt="drawing" width="550"/>
+<img src="https://scp222thj.dev/static/images/bepinexConsole.png" alt="drawing" width="550"/>
 
 <br>If you are still having issues, feel free to open a new Github issue [here](https://github.com/scp222thj/MalumMenu/issues/new), or you can ask for help in our Discord server: [discord.gg/YYcYf88jAb](https://discord.gg/YYcYf88jAb)
 </details>
